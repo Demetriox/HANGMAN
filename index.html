@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ahorcado: Padrino de Boda</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f2f2f2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        #word {
+            font-size: 2rem;
+            letter-spacing: 10px;
+            margin: 20px 0;
+        }
+
+        #letters {
+            margin-top: 10px;
+        }
+
+        button.letter {
+            margin: 4px;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #message {
+            font-size: 24px;
+            color: green;
+            margin-top: 20px;
+        }
+
+        #hangman {
+            white-space: pre;
+            font-family: monospace;
+            color: red;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1> Ahorcado </h1>
+    <div id="word"></div>
+    <div id="letters"></div>
+    <div id="hangman"></div>
+    <div id="message"></div>
+
+    <script>
+        const answer = "Padrino de boda?";
+        let guessedLetters = [];
+        let wrongGuesses = 0;
+        const maxGuesses = 6;
+
+        const hangmanStates = [
+            `
+            
+            
+            
+            
+            
+      =========`,
+
+            `
+            
+            
+            
+            
+           |
+      =========`,
+
+            `
+           |
+           |
+           |
+           |
+           |
+      =========`,
+
+            `
+       +---+
+           |
+           |
+           |
+           |
+           |
+      =========`,
+
+            `
+       +---+
+       |   |
+       O   |
+           |
+           |
+           |
+      =========`,
+
+            `
+       +---+
+       |   |
+       O   |
+       |   |
+           |
+           |
+      =========`,
+
+            `
+       +---+
+       |   |
+       O   |
+      /|\\  |
+      / \\  |
+           |
+      =========`];
+
+        const wordDiv = document.getElementById('word');
+        const lettersDiv = document.getElementById('letters');
+        const hangmanDiv = document.getElementById('hangman');
+        const messageDiv = document.getElementById('message');
+
+        function displayWord() {
+            wordDiv.innerHTML = answer
+                .split('')
+                .map(char => {
+                    if (char === ' ') return '&nbsp;&nbsp;';
+                    return guessedLetters.includes(char.toLowerCase()) ? char : '_';
+                })
+                .join(' ');
+        }
+
+        function updateHangman() {
+            hangmanDiv.textContent = hangmanStates[wrongGuesses];
+        }
+
+        function checkWinLose() {
+            const normalizedAnswer = answer.replace(/ /g, '').toLowerCase();
+            const normalizedGuesses = guessedLetters.join('');
+
+            const allGuessed = [...normalizedAnswer].every(c => guessedLetters.includes(c));
+
+            if (allGuessed) {
+                messageDiv.textContent = "🎉 ¡Ganaste! Has descubierto al padrino.";
+                disableAllButtons();
+            } else if (wrongGuesses >= maxGuesses) {
+                messageDiv.textContent = "💀 ¡Perdiste Romario! Era: " + answer;
+                disableAllButtons();
+            }
+        }
+
+        function disableAllButtons() {
+            document.querySelectorAll('button.letter').forEach(btn => {
+                btn.disabled = true;
+            });
+        }
+
+        function handleGuess(letter) {
+            if (answer.toLowerCase().includes(letter)) {
+                guessedLetters.push(letter);
+            } else {
+                wrongGuesses++;
+            }
+            displayWord();
+            updateHangman();
+            checkWinLose();
+        }
+
+        function createLetterButtons() {
+            const alphabet = 'abcdefghijklmnñopqrstuvwxyz';
+            lettersDiv.innerHTML = '';
+            alphabet.split('').forEach(letter => {
+                const btn = document.createElement('button');
+                btn.textContent = letter;
+                btn.classList.add('letter');
+                btn.onclick = () => {
+                    btn.disabled = true;
+                    handleGuess(letter);
+                };
+                lettersDiv.appendChild(btn);
+            });
+        }
+
+        // Inicializar
+        displayWord();
+        updateHangman();
+        createLetterButtons();
+    </script>
+</body>
+
+</html>
